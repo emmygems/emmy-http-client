@@ -11,8 +11,6 @@ require "emmy_http/client/client"
 require "emmy_http/client/encoding"
 
 module EmmyHttp
-  class ParserError < StandardError; end
-
   module Client
     USER_AGENT   = 'emmy-http'.freeze
     HTTP_VERSION = 'HTTP/1.1'.freeze

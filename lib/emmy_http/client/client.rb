@@ -114,11 +114,12 @@ module EmmyHttp
 
     def prepare_url
       @url       = request.url
+      @url.path  = request.path.to_s if request.path
       @url.query = request.query.is_a?(Hash) ? Encoding.query(request.query) : request.query.to_s if request.query
     end
 
     def prepare_body(headers)
-      body, form, file = request.body, request.form, request.file
+      body, form, json, file = request.body, request.form, request.json, request.file
 
       if body
         raise "body cannot be hash use form attribute instead" if body.is_a?(Hash)
@@ -132,6 +133,12 @@ module EmmyHttp
         headers['Content-Type'] = 'application/x-www-form-urlencoded'
         headers['Content-Length'] = body_text.bytesize
         body_text
+
+      elsif json
+        json_string = json.is_a?(String) ? json : (json.respond_to?(:to_json) ? json.to_json : JSON.dump(json))
+        headers['Content-Length'] = json_string.size
+        headers['Content-Type']   = 'application/json'
+        json_string
 
       elsif file
         headers['Content-Length'] = File.size(file)
@@ -165,7 +172,7 @@ module EmmyHttp
       # Send headers
 
       head = "#{request.type.upcase} #{url_path} #{Client::HTTP_VERSION}\r\n"
-      head = headers.inject(head) { |r, (k, v)| r + k + ': ' + v + "\r\n" }
+      head = headers.inject(head) { |r, (k, v)| "#{r}#{k}:#{v}\r\n" }
       head += "\r\n"
       connection.send_data head
 

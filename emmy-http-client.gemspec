@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["inre"]
   spec.email         = ["inre.storm@gmail.com"]
 
-  spec.summary       = %q{HTTP Client}
-  spec.description   = %q{EventMachine-based HTTP Client}
+  spec.summary       = %q{HTTP request client}
+  spec.description   = %q{EventMachine-based HTTP request client}
   #spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -21,8 +21,8 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "event_object"
   spec.add_dependency "fibre"
-  #spec.add_dependency "emmy-machine"
-  #spec.add_dependency "emmy-http"
+  spec.add_dependency "emmy-machine"
+  spec.add_dependency "emmy-http"
 
   spec.add_development_dependency "bundler", "~> 1.9"
   spec.add_development_dependency "rake", "~> 10.0"
