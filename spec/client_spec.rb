@@ -16,7 +16,7 @@ describe EmmyHttp::Client do
 
     expect(response.status).to be(200)
     expect(response.body).to_not be_empty
-    expect(response.content_type).to eq("text/html")
+    expect(response.content_type).to eq("application/json")
   end
 
   it 'do POST form' do
