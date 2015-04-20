@@ -47,4 +47,13 @@ describe EmmyHttp::Client do
     expect(response.content["json"]).to include('points' => [{'x' => 5, 'y' => 6}, {'x' => 3, 'y' => 2}])
   end
 
+  it 'do HTTPS request' do
+    request   = EmmyHttp::Request.new(url: 'https://httpbin.org/get')
+    operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+    response  = operation.sync
+    
+    expect(response.status).to be(200)
+    expect(response.content_type).to eq("application/json")
+    expect(response.content).to_not be_empty
+  end
 end

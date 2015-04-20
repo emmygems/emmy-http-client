@@ -37,6 +37,7 @@ module EmmyHttp
       conn.comm_inactivity_timeout = request.timeouts.inactivity
 
       conn.on :connect do
+        conn.start_tls(client.request.ssl ? client.request.ssl.serializable_hash : {}) if client.request.ssl?
         send_request
         change_state(:wait_response)
       end
