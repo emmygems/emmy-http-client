@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'logger'
 
 describe EmmyHttp::Client do
   around do |example|
@@ -51,9 +52,26 @@ describe EmmyHttp::Client do
     request   = EmmyHttp::Request.new(url: 'https://httpbin.org/get')
     operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
     response  = operation.sync
-    
+
     expect(response.status).to be(200)
     expect(response.content_type).to eq("application/json")
     expect(response.content).to_not be_empty
+  end
+
+  it 'should HTTP connection keep alive' do
+    request1   = EmmyHttp::Request.new(url: 'http://httpbin.org', keep_alive: true)
+    operation1 = EmmyHttp::Operation.new(request1, EmmyHttp::Client::Adapter.new)
+
+    # send first request
+    response1  = operation1.sync
+
+    request2   = EmmyHttp::Request.new(url: 'http://httpbin.org')
+    operation2 = EmmyHttp::Operation.new(request2, EmmyHttp::Client::Adapter.new, operation1.connection)
+
+    # try send again
+    response2  = operation2.sync
+
+    expect(response1.status).to be(200)
+    expect(response2.status).to be(200)
   end
 end

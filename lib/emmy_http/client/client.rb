@@ -13,6 +13,7 @@ module EmmyHttp
     attr_accessor :operation
     attr_accessor :adapter
     attr_accessor :parser
+    attr_accessor :stop_reason
 
     attr_accessor :redirects
 
@@ -26,7 +27,6 @@ module EmmyHttp
       change_state(:idle)
     end
 
-
     def initialize_connection(conn)
       @connection = conn
       @parser  = Client::Parser.new
@@ -36,50 +36,7 @@ module EmmyHttp
       conn.pending_connect_timeout = request.timeouts.connect
       conn.comm_inactivity_timeout = request.timeouts.inactivity
 
-      conn.on :connect do
-        conn.start_tls(client.request.ssl ? client.request.ssl.serializable_hash : {}) if client.request.ssl?
-        send_request
-        change_state(:wait_response)
-      end
-
-      conn.on :data do |chunk|
-        begin
-          parser << chunk
-        rescue EmmyHttp::ParserError => e
-          conn.error!(e.message)
-        end
-      end
-
-      conn.on :close do
-        if state == :body && !client.response.content_length?
-          client.response.finish
-        end
-
-        if client.response && client.response.redirection?
-          change_state(:redirect)
-          client.url = URI(client.response.location)
-          client.response = nil
-          parser.reset!
-          operation.reconnect
-        end
-
-        if client.response && client.response.finished?
-          change_state(:success)
-          operation.success!(response, operation, connection)
-        end
-      end
-
-      conn.on :error do |message|
-        change_state(:catch_error)
-      end
-
-      conn.on :handshake do
-
-      end
-
-      conn.on :verify_peer do
-
-      end
+      attach(conn)
 
       parser.on :head do |headers|
         #parser.http_version
@@ -99,10 +56,59 @@ module EmmyHttp
 
       parser.on :completed do
         client.response.finish
-        stop
+        if request.keep_alive?
+          change_state(:success)
+          dettach(conn)
+          operation.success!(response, operation, connection)
+        else
+          client.close
+        end
       end
 
       change_state(:wait_connect)
+    end
+
+    def connect
+      connection.start_tls(request.ssl ? request.ssl.serializable_hash : {}) if request.ssl?
+      send_request
+      change_state(:wait_response)
+    end
+
+    def data(chunk)
+      begin
+        parser << chunk
+      rescue EmmyHttp::ParserError => e
+        stop(e.message)
+      end
+    end
+
+    def close(reason=nil)
+      if stop_reason
+        change_state(:catch_error)
+        operation.error!(stop_reason)
+        return
+      end
+
+      if state == :body && !response.content_length?
+        response.finish
+      end
+
+      if response && response.redirection?
+        change_state(:redirect)
+        self.url = URI(response.location)
+        self.response = nil
+        parser.reset!
+        operation.reconnect
+      end
+
+      if response && response.finished?
+        change_state(:success)
+        dettach(connection)
+        operation.success!(response, operation, connection)
+      else
+        change_state(:catch_error)
+        operation.error!('invalid response')
+      end
     end
 
     def send_request
@@ -187,13 +193,26 @@ module EmmyHttp
       url.query ? '/' + url.path + '?' + url.query : '/' + url.path
     end
 
-    def stop(reason='')
+    def stop(reason=nil)
+      @stop_reason ||= reason
       connection.close_connection if connection
     end
 
     def change_state(new_state)
       @state = new_state
       change!(state, self)
+    end
+
+    def attach(conn)
+      listen conn, :connect, :connect
+      listen conn, :data, :data
+      listen conn, :close, :close
+    end
+
+    def dettach(conn)
+      stop_listen conn, :connect
+      stop_listen conn, :data
+      stop_listen conn, :close
     end
 
     def to_a
