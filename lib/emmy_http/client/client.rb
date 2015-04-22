@@ -56,12 +56,13 @@ module EmmyHttp
 
       parser.on :completed do
         client.response.finish
+
         if request.keep_alive?
           change_state(:success)
           dettach(conn)
           operation.success!(response, operation, connection)
         else
-          client.close
+          client.stop
         end
       end
 
@@ -99,6 +100,7 @@ module EmmyHttp
         self.response = nil
         parser.reset!
         operation.reconnect
+        return
       end
 
       if response && response.finished?
@@ -107,7 +109,7 @@ module EmmyHttp
         operation.success!(response, operation, connection)
       else
         change_state(:catch_error)
-        operation.error!('invalid response')
+        operation.error!(reason.new.to_s || 'Invalid response')
       end
     end
 
@@ -169,7 +171,7 @@ module EmmyHttp
 
       unless headers.key? 'Host'
         headers['Host']  = url.host
-        headers['Host'] += ":#{uri.port}" unless (url.scheme == 'http'  && url.port == 80) ||
+        headers['Host'] += ":#{url.port}" unless (url.scheme == 'http'  && url.port == 80) ||
                                                  (url.scheme == 'https' && url.port == 443)
       end
     end

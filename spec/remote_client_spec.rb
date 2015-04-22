@@ -6,10 +6,6 @@ describe EmmyHttp::Client do
     EmmyMachine.run_block &example
   end
 
-  it 'has a version number' do
-    expect(EmmyHttp::Client::VERSION).not_to be nil
-  end
-
   it 'do GET request' do
     request   = EmmyHttp::Request.new(url: 'http://httpbin.org/get')
     operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
@@ -73,5 +69,14 @@ describe EmmyHttp::Client do
 
     expect(response1.status).to be(200)
     expect(response2.status).to be(200)
+  end
+
+  it 'raise connection refused' do
+    expect {
+      request   = EmmyHttp::Request.new(url: 'http://localhost:10450')
+      operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+
+      response  = operation.sync
+    }.to raise_error 'Connection refused'
   end
 end
