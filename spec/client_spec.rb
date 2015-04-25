@@ -6,7 +6,7 @@ describe EmmyHttp::Client do
     EmmyMachine.run_block &example
   end
 
-  it 'do GET request' do
+  it 'does GET request' do
     request   = EmmyHttp::Request.new(url: 'http://httpbin.org/get')
     operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
     response  = operation.sync
@@ -16,7 +16,7 @@ describe EmmyHttp::Client do
     expect(response.content_type).to eq("application/json")
   end
 
-  it 'do POST form' do
+  it 'does POST form' do
     request   = EmmyHttp::Request.new(
       type: 'POST',
       url: 'http://httpbin.org/post',
@@ -30,7 +30,7 @@ describe EmmyHttp::Client do
     expect(response.content["form"]).to include("first_name"=>"John", "last_name"=>"Due")
   end
 
-  it 'do POST json' do
+  it 'does POST json' do
     request   = EmmyHttp::Request.new(
       type: 'POST',
       url: 'http://httpbin.org/post',
@@ -44,7 +44,7 @@ describe EmmyHttp::Client do
     expect(response.content["json"]).to include('points' => [{'x' => 5, 'y' => 6}, {'x' => 3, 'y' => 2}])
   end
 
-  it 'do HTTPS request' do
+  it 'does HTTPS request' do
     request   = EmmyHttp::Request.new(url: 'https://httpbin.org/get')
     operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
     response  = operation.sync
@@ -71,6 +71,20 @@ describe EmmyHttp::Client do
     expect(response2.status).to be(200)
   end
 
+  it 'has gzipped request body', skip: true do
+    request   = EmmyHttp::Request.new(
+      type: 'POST',
+      url: 'http://httpbin.org/post',
+      headers: { 'Content-Encoding' => 'gzip' },
+      form: { p1: 1, p2: 2 }
+    )
+    operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+    response  = operation.sync
+
+    expect(response.status).to be(200)
+    expect(response.content['headers']['Content-Encoding']).to eq('gzip')
+  end
+
   it 'has deflated response' do
     request   = EmmyHttp::Request.new(url: 'http://httpbin.org/deflate')
     operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
@@ -79,8 +93,8 @@ describe EmmyHttp::Client do
     expect(response.status).to be(200)
     expect(response.content["deflated"]).to be true
   end
-=begin
-  it 'has gzipped response' do
+
+  it 'has gzipped response', skip: true do
     request   = EmmyHttp::Request.new(url: 'http://httpbin.org/gzip')
     operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
     response  = operation.sync
@@ -88,8 +102,8 @@ describe EmmyHttp::Client do
     expect(response.status).to be(200)
     expect(response.content["gzipped"]).to be true
   end
-=end
-  it 'raise connection refused' do
+
+  it 'raises connection refused' do
     expect {
       request   = EmmyHttp::Request.new(url: 'http://localhost:10450')
       operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
@@ -116,6 +130,15 @@ describe EmmyHttp::Client do
     expect(response.status).to be(200)
     expect(response.body).to_not be_empty
     expect(response.content_type).to eq("application/json")
+  end
+
+  it 'has timeout request' do
+    request   = EmmyHttp::Request.new(
+      url: 'http://httpbin.org/delay/2',
+      timeouts: { connect: 10, inactivity: 1 }
+    )
+    operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+    expect { operation.sync }.to raise_error EmmyHttp::ConnectionError
   end
 
 end
