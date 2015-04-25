@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "event_object", "~> 0.9.1"
   spec.add_dependency "fibre", "~> 0.9.7"
   spec.add_dependency "emmy-machine", "~> 0.1.7"
-  spec.add_dependency "emmy-http", "~> 0.1.6"
+  #spec.add_dependency "emmy-http", "~> 0.1.6"
 
   spec.add_development_dependency "bundler", "~> 1.9"
   spec.add_development_dependency "rake", "~> 10.0"

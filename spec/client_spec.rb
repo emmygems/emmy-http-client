@@ -71,6 +71,24 @@ describe EmmyHttp::Client do
     expect(response2.status).to be(200)
   end
 
+  it 'has deflated response' do
+    request   = EmmyHttp::Request.new(url: 'http://httpbin.org/deflate')
+    operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+    response  = operation.sync
+
+    expect(response.status).to be(200)
+    expect(response.content["deflated"]).to be true
+  end
+=begin
+  it 'has gzipped response' do
+    request   = EmmyHttp::Request.new(url: 'http://httpbin.org/gzip')
+    operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+    response  = operation.sync
+
+    expect(response.status).to be(200)
+    expect(response.content["gzipped"]).to be true
+  end
+=end
   it 'raise connection refused' do
     expect {
       request   = EmmyHttp::Request.new(url: 'http://localhost:10450')
@@ -79,4 +97,25 @@ describe EmmyHttp::Client do
       response  = operation.sync
     }.to raise_error 'Connection refused'
   end
+
+  it 'has 302 Absolute redirects' do
+    request   = EmmyHttp::Request.new(url: 'http://httpbin.org/absolute-redirect/2')
+    operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+    response  = operation.sync
+
+    expect(response.status).to be(200)
+    expect(response.body).to_not be_empty
+    expect(response.content_type).to eq("application/json")
+  end
+=begin
+  it 'has 302 Relative redirects' do
+    request   = EmmyHttp::Request.new(url: 'http://httpbin.org/relative-redirect/2')
+    operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+    response  = operation.sync
+
+    expect(response.status).to be(200)
+    expect(response.body).to_not be_empty
+    expect(response.content_type).to eq("application/json")
+  end
+=end
 end

@@ -14,6 +14,7 @@ module EmmyHttp
     attr_accessor :adapter
     attr_accessor :parser
     attr_accessor :stop_reason
+    attr_accessor :decoder
 
     attr_accessor :redirects
 
@@ -46,24 +47,18 @@ module EmmyHttp
           headers: headers,
           body: ''
         )
+        client.decoder = new_decoder_by_encoding(headers['Content-Encoding']) if request.decoding
         operation.head!(response, operation, connection)
         #parser.reset = true if request.no_body?
       end
 
       parser.on :body do |chunk|
-        response.data!(chunk)
+        response.data!(client.decoder ? (client.decoder.decompress(chunk) || '') : chunk)
       end
 
       parser.on :completed do
         client.response.finish
-
-        if request.keep_alive?
-          change_state(:success)
-          dettach(conn)
-          operation.success!(response, operation, connection)
-        else
-          client.stop
-        end
+        request.keep_alive? ? finalize : client.stop
       end
 
       change_state(:wait_connect)
@@ -103,19 +98,13 @@ module EmmyHttp
         return
       end
 
-      if response && response.finished?
-        change_state(:success)
-        dettach(connection)
-        operation.success!(response, operation, connection)
-      else
-        change_state(:catch_error)
-        operation.error!(reason.new.to_s || 'Invalid response')
-      end
+      finalize(reason)
     end
 
     def send_request
       headers = {}
       body    = prepare_body(headers)
+      body    = Encoders.encode_body(request.headers["Content-Encoding"], body) if request.encoding?
 
       prepare_headers(headers)
       send_http_request(headers, body)
@@ -124,7 +113,7 @@ module EmmyHttp
     def prepare_url
       @url       = request.url
       @url.path  = request.path.to_s if request.path
-      @url.query = request.query.is_a?(Hash) ? Encoding.query(request.query) : request.query.to_s if request.query
+      @url.query = request.query.is_a?(Hash) ? Encoders.query(request.query) : request.query.to_s if request.query
     end
 
     def prepare_body(headers)
@@ -137,8 +126,8 @@ module EmmyHttp
         body_text
 
       elsif form
-        form_encoded = form.is_a?(String) ? form : Encoding.www_form(form)
-        body_text = Encoding.rfc3986(form_encoded)
+        form_encoded = form.is_a?(String) ? form : Encoders.www_form(form)
+        body_text = Encoders.rfc3986(form_encoded)
         headers['Content-Type'] = 'application/x-www-form-urlencoded'
         headers['Content-Length'] = body_text.bytesize
         body_text
@@ -191,6 +180,18 @@ module EmmyHttp
       connection.send_stream_file_data request.file if request.file
     end
 
+    def finalize(reason=nil)
+      dettach(connection)
+      if response && response.finished?
+        change_state(:success)
+        response.data!(decoder.finalize || '') if decoder
+        operation.success!(response, operation, connection)
+      else
+        change_state(:catch_error)
+        operation.error!(reason ? reason.new.to_s : 'Invalid response')
+      end
+    end
+
     def url_path
       url.query ? '/' + url.path + '?' + url.query : '/' + url.path
     end
@@ -215,6 +216,17 @@ module EmmyHttp
       stop_listen conn, :connect
       stop_listen conn, :data
       stop_listen conn, :close
+    end
+
+    def new_decoder_by_encoding(encoding)
+      case encoding
+      when 'deflate', 'compressed'
+        EmmyHttp::Client::Decoders::Deflate.new
+      when 'gzip'
+        EmmyHttp::Client::Decoders::GZip.new        
+      else
+        nil
+      end
     end
 
     def to_a

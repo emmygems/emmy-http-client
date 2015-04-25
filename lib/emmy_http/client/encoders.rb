@@ -1,5 +1,5 @@
 module EmmyHttp
-  module Encoding
+  module Encoders
     extend self
 
     def escape(str)
@@ -23,6 +23,27 @@ module EmmyHttp
         v.map { |e| escape(k) + "[]=" + escape(e) }.join("&")
       else
         escape(k) + "=" + escape(v)
+      end
+    end
+
+    def encode_body(encoding, body)
+      require 'zlib'
+      require 'stringio'
+
+      case encoding
+      when "gzip"
+        wio = StringIO.new("w")
+        begin
+          w_gz = Zlib::GzipWriter.new(wio)
+          w_gz.write(body)
+        rescue
+          raise EmmyHttp::EncoderError
+        ensure
+          w_gz.close
+        end
+        wio.string
+      else
+        body
       end
     end
 
