@@ -65,7 +65,7 @@ module EmmyHttp
     end
 
     def connect
-      connection.start_tls(request.ssl ? request.ssl.serializable_hash : {}) if request.ssl?
+      connection.start_tls(request.ssl ? request.ssl.serializable_hash : {}) if ssl?
       send_request
       change_state(:wait_response)
     end
@@ -111,7 +111,10 @@ module EmmyHttp
     end
 
     def prepare_url
-      @url       = request.url
+      @url = request.real_url
+      raise 'relative url' if @url.relative?
+
+      @url.normalize!
       @url.path  = request.path.to_s if request.path
       @url.query = request.query.is_a?(Hash) ? Encoders.query(request.query) : request.query.to_s if request.query
     end
@@ -194,6 +197,10 @@ module EmmyHttp
 
     def url_path
       url.query ? '/' + url.path + '?' + url.query : '/' + url.path
+    end
+
+    def ssl?
+      request.ssl || url.scheme == 'https' || url.port == 443
     end
 
     def stop(reason=nil)

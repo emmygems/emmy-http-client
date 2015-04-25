@@ -16,6 +16,20 @@ describe EmmyHttp::Client do
     expect(response.content_type).to eq("application/json")
   end
 
+  it "does GET with url template" do
+    request   = EmmyHttp::Request.new(
+      url: 'http://httpbin.org/bytes{/bytes}',
+      params: {
+        bytes: 1024
+      }
+    )
+    operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+    response  = operation.sync
+
+    expect(response.status).to be(200)
+    expect(response.body.size).to be(1024)
+  end
+
   it 'does POST form' do
     request   = EmmyHttp::Request.new(
       type: 'POST',
@@ -141,7 +155,7 @@ describe EmmyHttp::Client do
     expect { operation.sync }.to raise_error EmmyHttp::ConnectionError
   end
 
-  it "sends request with authorization" do
+  it "send request with authorization" do
     request   = EmmyHttp::Request.new(url: 'http://test:123@httpbin.org/basic-auth/test/123')
     operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
     response  = operation.sync
