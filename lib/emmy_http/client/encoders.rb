@@ -26,6 +26,10 @@ module EmmyHttp
       end
     end
 
+    def encode_auth(userinfo)
+      "Basic #{Base64.strict_encode64(userinfo)}"
+    end
+
     def encode_body(encoding, body)
       require 'zlib'
       require 'stringio'

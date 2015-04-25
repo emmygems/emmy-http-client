@@ -154,9 +154,9 @@ module EmmyHttp
 
       # TODO: cookie
 
-      headers['Connection']    = 'close' unless request.keep_alive?
-      headers['User-Agent']    =  Client::USER_AGENT unless headers.key? 'User-Agent'
-      headers['Authorization'] = url.userinfo.split(/:/, 2) if url.userinfo
+      headers['Connection']      = 'close' unless request.keep_alive?
+      headers['User-Agent']      =  Client::USER_AGENT unless headers.key? 'User-Agent'
+      headers['Authorization'] ||= Encoders.encode_auth(url.userinfo) if url.userinfo
 
       unless headers.key? 'Host'
         headers['Host']  = url.host

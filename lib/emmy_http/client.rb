@@ -1,3 +1,4 @@
+require 'base64'
 require 'event_object'
 require 'emmy_http'
 require 'fibre'

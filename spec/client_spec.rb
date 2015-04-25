@@ -141,4 +141,13 @@ describe EmmyHttp::Client do
     expect { operation.sync }.to raise_error EmmyHttp::ConnectionError
   end
 
+  it "sends request with authorization" do
+    request   = EmmyHttp::Request.new(url: 'http://test:123@httpbin.org/basic-auth/test/123')
+    operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+    response  = operation.sync
+
+    expect(response.status).to be(200)
+    expect(response.content_type).to eq("application/json")
+    expect(response.content["authenticated"]).to be true
+  end
 end
