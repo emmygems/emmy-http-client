@@ -91,7 +91,7 @@ module EmmyHttp
 
       if response && response.redirection?
         change_state(:redirect)
-        self.url = URI(response.location)
+        self.url = url + response.location
         self.response = nil
         parser.reset!
         operation.reconnect
@@ -223,14 +223,14 @@ module EmmyHttp
       when 'deflate', 'compressed'
         EmmyHttp::Client::Decoders::Deflate.new
       when 'gzip'
-        EmmyHttp::Client::Decoders::GZip.new        
+        EmmyHttp::Client::Decoders::GZip.new
       else
         nil
       end
     end
 
     def to_a
-      ["tcp://#{url.host}:#{url.port}", connection || EmmyMachine::Connection, method(:initialize_connection), self]
+      ["tcp://#{url.host}:#{url.port || url.default_port}", connection || EmmyMachine::Connection, method(:initialize_connection), self]
     end
 
     #<<<

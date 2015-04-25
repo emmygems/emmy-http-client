@@ -107,7 +107,7 @@ describe EmmyHttp::Client do
     expect(response.body).to_not be_empty
     expect(response.content_type).to eq("application/json")
   end
-=begin
+
   it 'has 302 Relative redirects' do
     request   = EmmyHttp::Request.new(url: 'http://httpbin.org/relative-redirect/2')
     operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
@@ -117,5 +117,5 @@ describe EmmyHttp::Client do
     expect(response.body).to_not be_empty
     expect(response.content_type).to eq("application/json")
   end
-=end
+
 end
