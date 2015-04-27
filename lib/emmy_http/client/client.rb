@@ -115,7 +115,11 @@ module EmmyHttp
       raise 'relative url' if @url.relative?
 
       @url.normalize!
-      @url.path  = request.path.to_s if request.path
+
+      if path = request.real_path
+        raise 'path is not relative' unless path.relative?
+        @url += path
+      end
       @url.query = request.query.is_a?(Hash) ? Encoders.query(request.query) : request.query.to_s if request.query
     end
 

@@ -30,6 +30,21 @@ describe EmmyHttp::Client do
     expect(response.body.size).to be(1024)
   end
 
+  it "does GET with path template" do
+    request   = EmmyHttp::Request.new(
+      url: 'http://httpbin.org',
+      path: '/bytes{/bytes}',
+      params: {
+        bytes: 1024
+      }
+    )
+    operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+    response  = operation.sync
+
+    expect(response.status).to be(200)
+    expect(response.body.size).to be(1024)
+  end
+
   it 'does POST form' do
     request   = EmmyHttp::Request.new(
       type: 'POST',
