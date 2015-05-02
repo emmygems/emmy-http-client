@@ -179,4 +179,18 @@ describe EmmyHttp::Client do
     expect(response.content_type).to eq("application/json")
     expect(response.content["authenticated"]).to be true
   end
+
+  it "send request with user/password attributes" do
+    request   = EmmyHttp::Request.new(
+      url: 'http://httpbin.org/basic-auth/test/123',
+      user: 'test',
+      password: '123'
+    )
+    operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
+    response  = operation.sync
+
+    expect(response.status).to be(200)
+    expect(response.content_type).to eq("application/json")
+    expect(response.content["authenticated"]).to be true
+  end
 end

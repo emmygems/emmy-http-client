@@ -120,6 +120,8 @@ module EmmyHttp
         raise 'path is not relative' unless path.relative?
         @url += path
       end
+      @url.user     = request.user if request.user
+      @url.password = request.password if request.password
       @url.query = request.query.is_a?(Hash) ? Encoders.query(request.query) : request.query.to_s if request.query
     end
 
