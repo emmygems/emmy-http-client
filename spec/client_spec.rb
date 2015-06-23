@@ -49,7 +49,7 @@ describe EmmyHttp::Client do
     request   = EmmyHttp::Request.new(
       type: 'POST',
       url: 'http://httpbin.org/post',
-      form: {'first_name' => 'John', 'last_name' => 'Due'}
+      form: {'first_name' => 'John', 'last_name' => 'Doe'}
     )
     operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
     response  = operation.sync
