@@ -36,7 +36,6 @@ module EmmyHttp
 
       conn.pending_connect_timeout = request.timeouts.connect
       conn.comm_inactivity_timeout = request.timeouts.inactivity
-
       attach(conn)
 
       parser.on :head do |headers|
@@ -71,11 +70,9 @@ module EmmyHttp
     end
 
     def data(chunk)
-      begin
-        parser << chunk
-      rescue EmmyHttp::ParserError => e
-        stop(e.message)
-      end
+      parser << chunk
+    rescue EmmyHttp::ParserError => e
+      stop(e.message)
     end
 
     def close(reason=nil)
@@ -143,8 +140,8 @@ module EmmyHttp
 
       elsif json
         json_string = json.is_a?(String) ? json : (json.respond_to?(:to_json) ? json.to_json : JSON.dump(json))
-        headers['Content-Length'] = json_string.size
         headers['Content-Type']   = 'application/json'
+        headers['Content-Length'] = json_string.size
         json_string
 
       elsif file

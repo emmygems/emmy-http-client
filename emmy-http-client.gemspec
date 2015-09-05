@@ -20,11 +20,14 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "http_parser.rb", "0.6.0"
+  spec.add_dependency "addressable", ">= 2.3.8"
   spec.add_dependency "event_object", "~> 0.9.1"
   spec.add_dependency "fibre", "~> 0.9.7"
   spec.add_dependency "emmy-machine", "~> 0.1.7"
-  spec.add_dependency "emmy-http", "~> 0.1.7"
+  #spec.add_dependency "emmy-http", "~> 0.1.7"
 
+  spec.add_development_dependency "eventmachine", ">= 1.0.7"
   spec.add_development_dependency "bundler", "~> 1.9"
   spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "rspec", "~> 3"
 end

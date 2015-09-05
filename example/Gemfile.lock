@@ -1,0 +1,43 @@
+PATH
+  remote: ../
+  specs:
+    emmy-http-client (0.1.9)
+      addressable (>= 2.3.8)
+      emmy-machine (~> 0.1.7)
+      event_object (~> 0.9.1)
+      fibre (~> 0.9.7)
+      http_parser.rb (= 0.6.0)
+
+GEM
+  specs:
+    addressable (2.3.8)
+    emmy (0.2.3)
+      emmy-engine (~> 0.1)
+      eventmachine (~> 1.0)
+    emmy-engine (0.2.8)
+      emmy-http (~> 0.2)
+      emmy-http-client (~> 0.1)
+      emmy-machine (~> 0.1)
+    emmy-http (0.2.8)
+      addressable (~> 2.3)
+      emmy-machine (~> 0.1)
+      event_object (~> 0.9)
+      fibre (~> 0.9)
+      model_pack (~> 0.9)
+      util_pack (~> 0.1)
+    emmy-machine (0.1.12)
+      fibre (~> 0.9.9)
+    event_object (0.9.4)
+    eventmachine (1.0.7)
+    fibre (0.9.14)
+      event_object (>= 0.9)
+    http_parser.rb (0.6.0)
+    model_pack (0.9.10)
+    util_pack (0.1.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  emmy
+  emmy-http-client!
