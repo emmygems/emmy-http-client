@@ -192,7 +192,7 @@ module EmmyHttp
         operation.success!(response, operation, connection)
       else
         change_state(:catch_error)
-        operation.error!(reason ? reason.new.to_s : 'Invalid response', operation, connection)
+        operation.error!(reason ? reason.to_s : 'bad response', operation, connection)
       end
     end
 
