@@ -76,12 +76,6 @@ module EmmyHttp
     end
 
     def close(reason=nil)
-      if stop_reason
-        change_state(:catch_error)
-        operation.error!(stop_reason)
-        return
-      end
-
       if state == :body && !response.content_length?
         response.finish
       end
@@ -91,11 +85,15 @@ module EmmyHttp
         self.url = url + response.location
         self.response = nil
         parser.reset!
-        operation.reconnect
+        begin
+          operation.reconnect
+        rescue EventMachine::ConnectionError => e
+          finalize(e.to_s)
+        end
         return
       end
 
-      finalize(reason)
+      finalize(stop_reason || reason)
     end
 
     def send_request

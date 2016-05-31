@@ -56,7 +56,7 @@ describe EmmyHttp::Client do
 
     expect(response.status).to be(200)
     expect(response.content_type).to eq("application/json")
-    expect(response.content["form"]).to include("first_name"=>"John", "last_name"=>"Due")
+    expect(response.content["form"]).to include("first_name"=>"John", "last_name"=>"Doe")
   end
 
   it 'does POST json' do
