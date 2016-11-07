@@ -8,7 +8,7 @@ describe EmmyHttp::Client::Monitor do
   end
 
   it "display http logs", current: true do
-    request   = EmmyHttp::Request.new(url: 'http://google.com')
+    request   = EmmyHttp::Request.new(url: 'http://httpbin.org')
     operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
 
     monitor = EmmyHttp::Client::Monitor.new

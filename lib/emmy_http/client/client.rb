@@ -197,7 +197,7 @@ module EmmyHttp
     end
 
     def url_path
-      url.query ? '/' + url.path + '?' + url.query : '/' + url.path
+      url.query ? url.path + '?' + url.query : url.path
     end
 
     def ssl?

@@ -138,7 +138,7 @@ describe EmmyHttp::Client do
       operation = EmmyHttp::Operation.new(request, EmmyHttp::Client::Adapter.new)
 
       response  = operation.sync
-    }.to raise_error 'Connection refused'
+    }.to raise_error EmmyHttp::ConnectionError
   end
 
   it 'has 302 Absolute redirects' do
