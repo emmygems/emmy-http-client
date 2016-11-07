@@ -164,7 +164,7 @@ module EmmyHttp
 
       unless headers.key? 'Host'
         headers['Host']  = url.host
-        headers['Host'] += ":#{url.port}" unless (url.scheme == 'http'  && url.port == 80) ||
+        headers['Host'] += ":#{url.port}" unless url.port || (url.scheme == 'http'  && url.port == 80) ||
                                                  (url.scheme == 'https' && url.port == 443)
       end
     end
